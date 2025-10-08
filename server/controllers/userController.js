@@ -1,5 +1,5 @@
 import { Webhook } from "svix";
-import userModel from "../models/userModel.js";
+import userModel from "../modals/userModal.js";
 
 //API Controller Function to manage clerk user with database
 // https://localhost:4000/api/user/webhooks
@@ -12,7 +12,7 @@ const clerkWebhooks = async (req, res) => {
             'svix-timestamp': req.headers['svix-timestamp'],
             'svix-signature': req.headers['svix-signature']
         });
-        const { type, data } = req.body;
+        const { data, type } = req.body;
         console.log('✅ Clerk Webhook Verified:', type);
 
         //Handle user created event
@@ -80,4 +80,19 @@ const clerkWebhooks = async (req, res) => {
     }
 }
 
-export { clerkWebhooks };
+//API Controller function to get user available credits
+const userCredits = async (req, res) => {  
+    try {
+        const { clerkId } = req.body;
+        const user = await userModel.findOne({ clerkId });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ creditBalance: user.creditBalance });
+    } catch (error) {
+        console.error('Error fetching user credits:', error.message);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export { clerkWebhooks, userCredits };
