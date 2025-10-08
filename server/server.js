@@ -1,21 +1,27 @@
-import express from "express";
-import serverless from "serverless-http";
-import cors from "cors";
-import connectDB from "./configs/mongodb.js";
-import userRouter from "./routes/userRoutes.js";
 import 'dotenv/config';
+import express from 'express';
+import cors from 'cors';
+import connectDB from './configs/mongodb.js';
+import userRouter from './routes/userRoutes.js';
 
+//App Config
 const app = express();
+const port = process.env.PORT || 4000;
 
-// Middleware
+//Middleware
 app.use(cors());
 app.use(express.json());
 
-// Database connection
-connectDB().then(() => console.log("✅ MongoDB connected"));
+//Database Connection
+await connectDB();
 
-// Routes
-app.get("/", (req, res) => res.send("✅ Server is running"));
-app.use("/api/user", userRouter);
+//API Endpoints
+app.get('/', (req, res) => {
+  res.send('Hello, World!');
+});
 
-export const handler = serverless(app);
+app.use('/api/user', userRouter);
+
+
+//Server Start
+app.listen(port, () => console.log(`Server running on port ${port}`));
