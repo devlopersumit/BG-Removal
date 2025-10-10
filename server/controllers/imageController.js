@@ -66,6 +66,8 @@ const removeBgImage = async (req, res) => {
             creditBalance: user.creditBalance - 1,
         });
 
+        
+
         if (response.status !== 200) {
             console.error("Error from ClipDrop API:", response.status, response.data);
             return res.status(500).json({ message: "Failed to remove background" });
