@@ -2,7 +2,6 @@ import { useState, createContext } from "react";
 import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { set } from "mongoose";
 import { useNavigate } from "react-router-dom";
 
 export const AppContext = createContext();
@@ -37,20 +36,10 @@ const AppContextProvider = (props) => {
         toast.error("Failed to load credits");
       }
 
-    }catch (error) {
-  if (error.response) {
-    // Backend responded but with error code (like 401 or 404)
-    console.error("🔴 Server error:", error.response.status, error.response.data);
-  } else if (error.request) {
-    // Request made but no response
-    console.error("🟠 No response from server:", error.request);
-  } else {
-    // Something else (like config issue)
-    console.error("🟡 Request setup error:", error.message);
-  }
-  toast.error("Failed to load credits. Check console for details.");
-}
-
+    } catch (error) {
+      console.error("Error loading credits:", error);
+      toast.error("Failed to load credits");
+    }
   };
 
   const removeBg = async (image) => {
@@ -64,13 +53,41 @@ const AppContextProvider = (props) => {
 
         navigate('/result');
 
+        const token = await getToken();
+        if(!token) {
+            throw new Error("Authentication token not found");
+        }
+        const formData = new FormData();
+        image && formData.append('image', image);
+
+        const { data } = await axios.post(backendUrl + '/api/image/removebg', formData, {
+            headers: {token}
+        });
+
+        if (data && data.resultImage) {
+            setResultImage(data.resultImage);
+            data.creditBalance && setCredit(data.creditBalance);
+            toast.success("Background removed successfully");
+        } else {
+            toast.error("Failed to remove background");
+            if(data.creditBalance === 0) {
+              navigate('/buy');
+              toast.info("You have run out of credits. Please buy more credits to continue using the service.");
+              setCredit(0);
+              setResultImage(false);
+              console.log('Result image from backend:', data.resultImage);
+
+              setImage(null);
+              return;
+            }
+        }
     } catch (error) {
       console.error("Error removing background:", error);
       toast.error("Failed to remove background");
     }
   }
 
-  const value = { credit, setCredit, loadCreditsData, backendUrl, image, setImage, removeBg };
+  const value = { credit, setCredit, loadCreditsData, backendUrl, image, setImage, removeBg, resultImage, setResultImage };
 
   return (
     <AppContext.Provider value={value}>
