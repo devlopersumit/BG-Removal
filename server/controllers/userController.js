@@ -83,8 +83,13 @@ const clerkWebhooks = async (req, res) => {
 //API Controller function to get user available credits
 const userCredits = async (req, res) => {  
     try {
-        const { clerkId } = req.body;
+        const { clerkId } = req.user;
+        console.log("Fetching credits for clerkId:", typeof clerkId);
+        if (!clerkId) {
+            return res.status(400).json({ message: 'clerkId is required' });
+        }
         const user = await userModel.findOne({ clerkId });
+        console.log("User found:", user);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
