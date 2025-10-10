@@ -1,15 +1,24 @@
 import { useState, createContext } from "react";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useClerk, useUser } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { set } from "mongoose";
+import { useNavigate } from "react-router-dom";
 
 export const AppContext = createContext();
 
 const AppContextProvider = (props) => {
   const [credit, setCredit] = useState(false);
+  const [image, setImage] = useState(null);
+  const [resultImage, setResultImage] = useState(false);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL; 
+
+  const navigate = useNavigate();
+
   const { getToken } = useAuth();
+  const { isSignedIn } = useUser();
+  const { openSignIn } = useClerk();
 
   const loadCreditsData = async () => {
     try {
@@ -44,8 +53,27 @@ const AppContextProvider = (props) => {
 
   };
 
+  const removeBg = async (image) => {
+    try {
+        if(!isSignedIn) {
+            openSignIn();
+            return;
+        }
+        setImage(image);
+        setResultImage(false);
+
+        navigate('/result');
+
+    } catch (error) {
+      console.error("Error removing background:", error);
+      toast.error("Failed to remove background");
+    }
+  }
+
+  const value = { credit, setCredit, loadCreditsData, backendUrl, image, setImage, removeBg };
+
   return (
-    <AppContext.Provider value={{ credit, setCredit, loadCreditsData, backendUrl }}>
+    <AppContext.Provider value={value}>
       {props.children}
     </AppContext.Provider>
   );

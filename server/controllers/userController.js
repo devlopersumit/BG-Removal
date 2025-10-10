@@ -81,7 +81,7 @@ const clerkWebhooks = async (req, res) => {
 }
 
 //API Controller function to get user available credits
-const userCredits = async (req, res) => {  
+const userCredits = async (req, res) => {
     try {
         const { clerkId } = req.user;
 
