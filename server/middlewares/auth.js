@@ -11,7 +11,6 @@ const authUser = async (req, res, next) => {
 
     // Decode the token (not verify, just decode for now)
     const token_decode = jwt.decode(token);
-    console.log("Decoded token:", token_decode);
 
 
     if (!token_decode || !token_decode.clerkId) {

@@ -21,15 +21,12 @@ const AppContextProvider = (props) => {
 
       const { data } = await axios.get(backendUrl + '/api/user/credits', {headers: { token }});
 
-      if (data.success) {
-        setCredit(data.credits);
-        console.log(data.credits);
-        
+      if (data && data.creditBalance !== undefined) {
+        setCredit(data.creditBalance);
+        console.log(data.creditBalance);
       } else {
         toast.error("Failed to load credits");
       }
-
-      console.log("Credits loaded:", data.credits);
 
     }catch (error) {
   if (error.response) {
